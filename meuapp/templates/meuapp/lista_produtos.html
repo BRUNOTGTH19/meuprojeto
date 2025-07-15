@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Produtos - Sistema de Vendas</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <style>
+    body {
+      background-color: #f0f2f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      color: #212529;
+      min-height: 100vh;
+      margin: 0;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    h1 {
+      font-weight: 700;
+      margin-bottom: 30px;
+      text-align: center;
+      color: #212529;
+      word-break: break-word;
+    }
+
+    /* Botão cadastrar */
+    .btn-cadastrar {
+      display: block;
+      width: 220px;
+      margin: 0 auto 30px auto;
+      background-color: #28a745;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 30px;
+      box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+      transition: background-color 0.3s ease;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .btn-cadastrar:hover {
+      background-color: #1e7e34;
+      color: white;
+      text-decoration: none;
+    }
+
+    /* Formulário de busca */
+    form.filtro-form {
+      margin-bottom: 30px;
+    }
+    form.filtro-form .form-control {
+      border-radius: 6px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    form.filtro-form .form-control:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      outline: none;
+    }
+
+    /* Tabela */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      table-layout: fixed;
+      word-wrap: break-word;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    table.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    thead th {
+      background-color: #007bff;
+      color: white;
+      font-weight: 600;
+      padding: 12px 15px;
+      text-align: left;
+      border-radius: 8px 8px 0 0;
+    }
+    tbody tr {
+      background-color: #f8f9fa;
+      transition: background-color 0.3s ease;
+      border-radius: 8px;
+    }
+    tbody tr:hover {
+      background-color: #e2e6ea;
+    }
+    tbody td {
+      padding: 12px 15px;
+      vertical-align: middle;
+      overflow-wrap: break-word;
+    }
+
+    /* Checkbox */
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+
+    /* Botões de ação */
+    .btn-danger {
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 6px 14px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      color: white;
+    }
+    .btn-danger:hover {
+      background-color: #a71d2a;
+      box-shadow: 0 0 10px #a71d2a;
+      text-decoration: none;
+    }
+
+    /* Botão excluir selecionados */
+    #btn-excluir-selecionados {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 220px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Responsividade para telas menores */
+    @media (max-width: 768px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+      }
+      thead {
+        display: none;
+      }
+      tbody tr {
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 15px;
+        background-color: #f8f9fa;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      }
+      tbody td {
+        padding: 10px 10px 10px 45%;
+        position: relative;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      tbody td:last-child {
+        border-bottom: 0;
+      }
+      tbody td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        top: 10px;
+        font-weight: 700;
+        color: #495057;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Lista de Produtos</h1>
+
+  <!-- Formulário de busca e filtro -->
+  <form method="get" class="filtro-form row g-2">
+    <div class="col-md-6">
+      <input type="text" name="busca" class="form-control" placeholder="Buscar por nome"
+             value="{{ request.GET.busca|default:'' }}">
+    </div>
+    <div class="col-md-4">
+      <input type="number" name="estoque_min" class="form-control" placeholder="Estoque mínimo"
+             value="{{ request.GET.estoque_min|default:'' }}">
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+  </form>
+
+  <a href="{% url 'cadastrar_produto' %}" class="btn-cadastrar">+ Cadastrar Produto</a>
+
+  <form method="POST" action="{% url 'excluir_produtos_selecionados' %}">
+    {% csrf_token %}
+
+    <table id="produtos-table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="select-all" /></th>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Preço (R$)</th>
+          <th>Estoque</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for produto in produtos %}
+        <tr>
+          <td data-label="Selecionar">
+            <input type="checkbox" name="produtos_ids" value="{{ produto.id }}" />
+          </td>
+          <td data-label="Nome">{{ produto.nome }}</td>
+          <td data-label="Descrição">{{ produto.descricao }}</td>
+          <td data-label="Preço">{{ produto.preco }}</td>
+          <td data-label="Estoque">{{ produto.estoque }}</td>
+          <td data-label="Ações">
+            <a href="{% url 'excluir_produto' produto.id %}" class="btn btn-danger btn-sm"
+               onclick="return confirm('Tem certeza que deseja excluir o produto {{ produto.nome }}?')">
+              Excluir
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 20px;">
+            Nenhum produto encontrado.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button id="btn-excluir-selecionados" type="submit" class="btn btn-danger"
+      onclick="return confirm('Tem certeza que deseja excluir os produtos selecionados?')">
+      Excluir selecionados
+    </button>
+  </form>
+
+  <a href="{% url 'cadastrar_produto' %}" class="btn btn-secondary mt-2">Voltar para Cadastro de Produto</a>
+  <a href="{% url 'home' %}" class="btn btn-secondary mt-2">🏠 Voltar para Tela Inicial</a>
+
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('produtos-table').classList.add('visible');
+
+      const selectAllCheckbox = document.getElementById('select-all');
+      selectAllCheckbox.addEventListener('change', function () {
+        document.querySelectorAll('input[name="produtos_ids"]').forEach(cb => {
+          cb.checked = this.checked;
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lista de Vendas</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f0f2f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      color: #212529;
+      min-height: 100vh;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-weight: 800;
+      color: #212529;
+    }
+
+    .btn-cadastrar {
+      display: block;
+      width: 220px;
+      margin: 0 auto 30px auto;
+      background-color: #28a745;
+      color: white;
+      font-weight: 700;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 30px;
+      box-shadow: 0 5px 15px rgba(40,167,69,0.4);
+      transition: background-color 0.3s ease;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn-cadastrar:hover {
+      background-color: #1e7e34;
+      color: white;
+      text-decoration: none;
+    }
+
+    form.filtros {
+      max-width: 1000px;
+      margin: 0 auto 30px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    table.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    thead th {
+      background-color: #007bff;
+      color: white;
+      font-weight: 600;
+      padding: 12px 15px;
+      text-align: left;
+      border-radius: 8px 8px 0 0;
+    }
+
+    tbody tr {
+      background-color: #f8f9fa;
+      transition: background-color 0.3s ease;
+    }
+
+    tbody tr:hover {
+      background-color: #e2e6ea;
+    }
+
+    tbody td {
+      padding: 12px 15px;
+      vertical-align: middle;
+    }
+
+    .produto-lista {
+      background-color: #fff;
+      padding: 10px 20px;
+      border-top: 1px solid #ddd;
+    }
+
+    .produto-lista ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .produto-lista li {
+      margin-bottom: 5px;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      border: none;
+      padding: 6px 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-danger:hover {
+      background-color: #a71d2a;
+      box-shadow: 0 0 10px #a71d2a;
+      color: white;
+      text-decoration: none;
+    }
+
+    #btn-excluir-selecionados {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 220px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Lista de Vendas</h1>
+
+  <a href="{% url 'cadastrar_venda' %}" class="btn-cadastrar">+ Cadastrar Venda</a>
+
+  <!-- Formulário de Filtros -->
+  <form method="GET" class="filtros">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-4">
+        <label for="busca_cliente" class="form-label">Cliente</label>
+        <input type="text" name="busca_cliente" id="busca_cliente" class="form-control"
+               value="{{ busca_cliente }}" placeholder="Nome do cliente">
+      </div>
+      <div class="col-md-3">
+        <label for="data_inicio" class="form-label">Data inicial</label>
+        <input type="date" name="data_inicio" id="data_inicio" class="form-control"
+               value="{{ data_inicio }}">
+      </div>
+      <div class="col-md-3">
+        <label for="data_fim" class="form-label">Data final</label>
+        <input type="date" name="data_fim" id="data_fim" class="form-control"
+               value="{{ data_fim }}">
+      </div>
+      <div class="col-md-2 d-grid">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+      </div>
+    </div>
+  </form>
+
+  <form method="POST" action="{% url 'excluir_vendas_selecionadas' %}">
+    {% csrf_token %}
+
+    <table id="vendas-table">
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="select-all" /></th>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Data</th>
+          <th>Total (R$)</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for venda in vendas %}
+        <tr>
+          <td data-label="Selecionar"><input type="checkbox" name="vendas_ids" value="{{ venda.id }}" /></td>
+          <td data-label="ID">{{ venda.id }}</td>
+          <td data-label="Cliente">{{ venda.cliente.nome }}</td>
+          <td data-label="Data">{{ venda.data|date:"d/m/Y H:i" }}</td>
+          <td data-label="Total">R$ {{ venda.total }}</td>
+          <td data-label="Ações">
+            <a href="{% url 'excluir_venda' venda.id %}" class="btn btn-danger btn-sm"
+               onclick="return confirm('Tem certeza que deseja excluir a venda #{{ venda.id }}?')">
+               Excluir
+            </a>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="6" class="produto-lista">
+            <strong>Produtos vendidos:</strong>
+            <ul>
+              {% for item in venda.itens.all %}
+              <li>{{ item.produto.nome }} — <strong>{{ item.quantidade }}x</strong> — R$ {{ item.preco_unitario }}</li>
+              {% empty %}
+              <li><em>Sem produtos</em></li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 20px;">
+            Nenhuma venda registrada.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <button id="btn-excluir-selecionados" type="submit" class="btn btn-danger"
+      onclick="return confirm('Tem certeza que deseja excluir as vendas selecionadas?')">
+      Excluir selecionados
+    </button>
+  </form>
+
+  <a href="{% url 'cadastrar_venda' %}" class="btn btn-secondary mt-2">Voltar para Cadastro de Venda</a>
+  <a href="{% url 'home' %}" class="btn btn-secondary mt-2">🏠 Voltar para Tela Inicial</a>
+
+
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('vendas-table').classList.add('visible');
+
+      const selectAllCheckbox = document.getElementById('select-all');
+      selectAllCheckbox.addEventListener('change', function () {
+        document.querySelectorAll('input[name="vendas_ids"]').forEach(cb => {
+          cb.checked = this.checked;
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

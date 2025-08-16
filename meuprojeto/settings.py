@@ -23,7 +23,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Necessário para servir estáticos no Render
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve arquivos estáticos no Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',  # Cuidado ao desativar CSRF
@@ -74,24 +74,17 @@ USE_TZ = True
 
 # Arquivos estáticos
 STATIC_URL = '/static/'
-
-# Aqui é seguro apontar para uma pasta "static" na raiz
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'meuapp','static')
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'meuapp', 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Whitenoise: compressão e cache para produção
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CSRF confiáveis - adicione depois a URL final do Render
+# CSRF confiáveis - adicione a URL final do Render
 CSRF_TRUSTED_ORIGINS = [
-    'https://8024575c-bbe4-44bd-953e-0e428f28b7c2-00-2kzb45teblkn7.riker.replit.dev',
+    'https://seuapp.onrender.com',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
-    'https://seuapp.onrender.com',
 ]
 
 # Configurações PWA
